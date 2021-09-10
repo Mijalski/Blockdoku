@@ -5,8 +5,8 @@ import Phaser from 'phaser';
 const config = {
     type: Phaser.AUTO,
     parent: 'phaser-game',
-    width: 900,
-    height: 1200,
+    width: 700,
+    height: 900,
     scene: GameScene
 };
 
