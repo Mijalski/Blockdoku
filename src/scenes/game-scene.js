@@ -72,7 +72,7 @@ export default class GameScene extends Phaser.Scene
     margin; halfMargin;
     screenSize;
     tileSize; halfTileSize;
-    activeBlockDefinitions; 
+    activeBlockDefinitions; unplaceableActiveBlockDefinitions = [];
     blockPickerPositionX; blockPickerPositionY;
     chosenBlockDefinition; chosenBlockImages; chosenBlockIndex;
     chosenGridTileCoordinates;
@@ -170,6 +170,12 @@ export default class GameScene extends Phaser.Scene
         this.redrawGrid();
         this.destroyBlocks();
         this.addNewBlocks();
+        this.unplaceableActiveBlockDefinitions = [];
+        this.activeBlockDefinitions.forEach(blockDefinition => {
+            if (blockDefinition && !this.hasBlockAnyValidPlacement(blockDefinition)) {
+                this.unplaceableActiveBlockDefinitions.push(blockDefinition);
+            }
+        });
         this.renderBlocks();
     }
 
@@ -400,6 +406,7 @@ export default class GameScene extends Phaser.Scene
     renderBlock(blockDefinition, x, y, index) {
         let startingX = x;
         let blockImages = [];
+        const canBePlaced = !this.unplaceableActiveBlockDefinitions.find(x => x === blockDefinition);
         blockDefinition.forEach(block => {
             if (block === -1) {
                 y += this.halfTileSize;
@@ -410,18 +417,32 @@ export default class GameScene extends Phaser.Scene
                     blockImages.push(this.add.image(x + this.halfTileSize, y + this.halfTileSize, 'block')
                                     .setScale(this.pickerTileScale)
                                     .setInteractive()
+                                    .setTint(canBePlaced ? 0xffffff : 0x333333)
                                     .on('pointerdown', pointer => {
-                                        blockImages.forEach(img => {
-                                            img.setScale(this.tileScale);
-                                        });
-                                        this.chosenBlockImages = blockImages;
-                                        this.chosenBlockDefinition = blockDefinition;
-                                        this.chosenBlockIndex = index;
+                                        if (canBePlaced) {
+                                            blockImages.forEach(img => {
+                                                img.setScale(this.tileScale);
+                                            });
+                                            this.chosenBlockImages = blockImages;
+                                            this.chosenBlockDefinition = blockDefinition;
+                                            this.chosenBlockIndex = index;
+                                        } 
                                     }));
                 }
             }
         });
         this.blockImages.push(blockImages);
+    }
+
+    hasBlockAnyValidPlacement(blockDefinition) {
+        for(let i = 0; i < gridSize; i++) {
+            for(let j = 0; j < gridSize; j++) {
+                if (this.isValidPlacement(blockDefinition, j, i)) {
+                    return true
+                }
+            }
+        }
+        return false;
     }
 
     getRandomBlocks() {
