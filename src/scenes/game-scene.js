@@ -37,6 +37,12 @@ const blockDefinitions = [
     [1,1,1,-1,0,0,1,-1,0,0,1], // ^^|
     [1,1,1,-1,1,-1,1], // |^^
 
+    // T
+    [0,1,-1,0,1,-1,1,1,1], // _|_
+    [1,1,1,-1,0,1,-1,0,1], // ^|^
+    [1,-1,1,1,1,-1,1], // |-
+    [0,0,1,-1,1,1,1,-1,0,0,1], // -|
+
     // Pointer
     [0,1,-1,1,1,1], // _|_
     [1,-1,1,1,-1,1], // |-
@@ -91,7 +97,7 @@ export default class GameScene extends Phaser.Scene
       
     create ()
     {
-        this.cameras.main.backgroundColor.setTo(1, 255, 255); 
+        this.cameras.main.backgroundColor.setTo(255, 255, 255); 
 
         this.margin = (this.cameras.main.width * 0.2);
         this.halfMargin = this.margin / 2;
