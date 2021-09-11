@@ -27,10 +27,10 @@ export default class GameScene extends Phaser.Scene
     margin; halfMargin;
     screenSize;
     tileSize; halfTileSize;
-    activeBlockDefinitions; activeBlocks;
+    activeBlockDefinitions; 
     blockPickerPositionX; blockPickerPositionY;
     chosenBlockDefinition; chosenBlockImages;
-    chosenGridTile;
+    chosenGridTileCoordinates;
 
     constructor ()
     {
@@ -65,13 +65,16 @@ export default class GameScene extends Phaser.Scene
         this.activeBlockDefinitions = this.getRandomBlocks();
 
         this.input.on('pointerup', (pointer, objectsClicked) => {   
-            this.dropBlock(); 
+            if (this.chosenBlockDefinition) {
+                this.dropBlock(); 
+            }
         });
 
         for (let i = 0; i < gridSize; i++) {
             this.tileImages[i] = [];
         }
-        this.renderGrid();
+
+        this.createGrid();
         this.renderBlocks();
     }
 
@@ -86,14 +89,49 @@ export default class GameScene extends Phaser.Scene
     }
 
     dropBlock() {
-        this.chosenBlockDefinition.forEach(block => {
-
-        });
+        if (this.chosenGridTileCoordinates) {
+            let [j , i] = this.chosenGridTileCoordinates;
+            if (this.isValidPlacement(this.chosenBlockDefinition, j, i)) {
+                this.placeBlock(j, i);
+            } else {
+                this.destroyBlock();
+            }
+        } else {
+            this.destroyBlock();
+        }
         this.chosenBlockImages = undefined;
         this.chosenBlockDefinition = undefined;
     }
 
-    renderGrid() {
+    placeBlock(j, i) {
+        const startingJ = j;
+        this.chosenBlockDefinition.forEach(block => {
+            if (block === 1) {
+                this.tiles[j][i] = 1;
+            } 
+
+            if (block === -1){
+                i++;
+                j = startingJ;
+            } else {
+                j++;
+            }
+        });
+
+
+        this.redrawGrid();
+        this.destroyBlock();
+        this.renderBlocks();
+    }
+
+    destroyBlock() {
+        this.chosenBlockImages.forEach(blockImage => {
+            blockImage.destroy();
+        });
+        this.renderBlocks();
+    }
+
+    createGrid() {
         for(let i = 0; i < gridSize; i++) {
             for(let j = 0; j < gridSize; j++) {
                 this.tileImages[j].push(this.add.image(
@@ -103,13 +141,36 @@ export default class GameScene extends Phaser.Scene
                                 .setScale(this.tileScale)
                                 .setInteractive()
                                 .on('pointerover', pointer => {
-                                    if (this.chosenBlockDefinition) {
-                                        this.resetGridHighlight();
-                                        if(this.isValidPlacement(this.chosenBlockDefinition, j, i)) {
-                                            this.highlightGrid(j, i);
-                                        }
-                                    }
+                                    this.pointerOverGridTile(j, i);
                                 }));
+            }
+        }
+    }
+
+    redrawGrid() {
+        for(let i = 0; i < gridSize; i++) {
+            for(let j = 0; j < gridSize; j++) {
+                this.tileImages[j][i] = this.add.image(
+                                                this.margin + (j * this.tileSize) + j + this.halfTileSize, 
+                                                this.margin + (i * this.tileSize) + i + this.halfTileSize,
+                                                this.tiles[j][i] == 0 ? this.getTileImage(j, i) : 'block')
+                                        .setScale(this.tileScale)
+                                        .setInteractive()
+                                        .on('pointerover', pointer => {
+                                            this.pointerOverGridTile(j, i);
+                                        });
+            }
+        }
+    }
+
+    pointerOverGridTile(j, i) {
+        if (this.chosenBlockDefinition) {
+            this.resetGridHighlight();
+            if (this.isValidPlacement(this.chosenBlockDefinition, j, i)) {
+                this.chosenGridTileCoordinates = [j, i];
+                this.highlightGrid(j, i);
+            } else {
+                this.chosenGridTileCoordinates = undefined;
             }
         }
     }
@@ -126,12 +187,7 @@ export default class GameScene extends Phaser.Scene
         const startingJ = j;
         this.chosenBlockDefinition.forEach(block => {
             if (block === 1) {
-                if (j < gridSize && i < gridSize && this.tiles[j][i] !== 1) {
-                    this.tileImages[j][i].setTint(0x333333);
-                }
-                else {
-                    return;
-                }
+                this.tileImages[j][i].setTint(0x333333);
             } 
 
             if (block === -1){
@@ -144,16 +200,24 @@ export default class GameScene extends Phaser.Scene
     }
 
     isValidPlacement(blockDefinition, j, i) {
-        let isValid = true;
-        blockDefinition.forEach(block => {
+        const startingJ = j;
+
+        for(const block of blockDefinition) {
             if (block === 1) {
                 if (j >= gridSize || i >= gridSize || this.tiles[j][i] === 1) {
-                    isValid = false;
+                    return false;
                 }
             } 
-        });
 
-        return isValid;
+            if (block === -1){
+                i++;
+                j = startingJ;
+            } else {
+                j++;
+            }
+        }
+
+        return true;
     }
 
     getTileImage(x, y) {
@@ -163,17 +227,9 @@ export default class GameScene extends Phaser.Scene
         return 'tile2';
     }
 
-    renderBlocks() {
-        this.activeBlockDefinitions.forEach((blockDefinition, idx) => {
-            let x = this.blockPickerPositionX * idx + this.margin;
-            let y = this.blockPickerPositionY;
-            this.renderBlock(blockDefinition, x, y, false);
-        });
-    }
-
     moveBlock(blockImages, blockDefinition, x, y) {
-        let startingX = x;
-        let counter = 0;
+        const startingX = x;
+        let blockIndex = 0;
         blockDefinition.forEach(block => {
             if(block === -1) {
                 y += this.tileSize;
@@ -181,12 +237,20 @@ export default class GameScene extends Phaser.Scene
             } 
             else {
                 if(block === 1) {
-                    blockImages[counter]
+                    blockImages[blockIndex]
                         .setPosition(x + this.tileSize, y + this.tileSize);
-                    counter++;
+                    blockIndex++;
                 }
                 x += this.tileSize;
             }
+        });
+    }
+
+    renderBlocks() {
+        this.activeBlockDefinitions.forEach((blockDefinition, idx) => {
+            let x = this.blockPickerPositionX * idx + this.margin;
+            let y = this.blockPickerPositionY;
+            this.renderBlock(blockDefinition, x, y);
         });
     }
 
@@ -194,13 +258,12 @@ export default class GameScene extends Phaser.Scene
         let startingX = x;
         let blockImages = [];
         blockDefinition.forEach(block => {
-            if(block === -1) {
+            if (block === -1) {
                 y += this.halfTileSize;
                 x = startingX;
-            } 
-            else {
+            } else {
                 x += this.halfTileSize;
-                if(block === 1) {
+                if (block === 1) {
                     blockImages.push(this.add.image(x + this.halfTileSize, y + this.halfTileSize, 'block')
                                     .setScale(this.pickerTileScale)
                                     .setInteractive()
