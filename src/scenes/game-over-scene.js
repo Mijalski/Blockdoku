@@ -4,7 +4,6 @@ import tile2Png from './../assets/tile2.png';
 import Phaser from 'phaser';
 
 const gridSize = 9;
-const maxActiveBlocks = 3;
 const tilePngSize = 80;
 const blockDefinitions = [
     // Horizontal Lines
@@ -83,21 +82,20 @@ export default class GameScene extends Phaser.Scene
     blockPickerPositionX; blockPickerPositionY;
     chosenBlockDefinition; chosenBlockImages; chosenBlockIndex;
     chosenGridTileCoordinates;
-    score;
 
-    constructor()
+    constructor ()
     {
         super();
     }
 
-    preload()
+    preload ()
     {
         this.load.image('block', blockPng);
         this.load.image('tile1', tile1Png);
         this.load.image('tile2', tile2Png);
     }
       
-    create()
+    create ()
     {
         this.cameras.main.backgroundColor.setTo(255, 255, 255); 
 
@@ -126,8 +124,7 @@ export default class GameScene extends Phaser.Scene
         for (let i = 0; i < gridSize; i++) {
             this.tileImages[i] = [];
         }
-        
-        this.score = 0;
+
         this.createGrid();
         this.renderBlocks();
     }
@@ -140,10 +137,6 @@ export default class GameScene extends Phaser.Scene
                     : this.input.mousePointer.x, 
                 this.input.mousePointer.y - this.tileSize);
         }
-    }
-
-    finishGame() {
-        this.scene.start('game-over-scene', { score: this.score });
     }
 
     dropBlock() {
@@ -165,11 +158,9 @@ export default class GameScene extends Phaser.Scene
 
     placeBlock(j, i) {
         const startingJ = j;
-        let scoreToAdd = 0;
         this.chosenBlockDefinition.forEach(block => {
             if (block === 1) {
                 this.tiles[j][i] = 1;
-                scoreToAdd += 1;
             } 
 
             if (block === -1){
@@ -181,8 +172,7 @@ export default class GameScene extends Phaser.Scene
         });
 
         this.activeBlockDefinitions[this.chosenBlockIndex] = undefined;
-        const linesAndSquaresCount = this.replaceCorrectLinesAndSquares();
-        this.score += linesAndSquaresCount * linesAndSquaresCount * 20;
+        this.replaceCorrectLinesAndSquares();
         this.redrawGrid();
         this.destroyBlocks();
         this.addNewBlocks();
@@ -192,11 +182,7 @@ export default class GameScene extends Phaser.Scene
                 this.unplaceableActiveBlockDefinitions.push(blockDefinition);
             }
         });
-        if(this.unplaceableActiveBlockDefinitions.length === maxActiveBlocks) {
-            this.finishGame();
-        }
         this.renderBlocks();
-        console.log(this.score);
     }
 
     addNewBlocks() {
@@ -217,8 +203,6 @@ export default class GameScene extends Phaser.Scene
         const squareCoordinates = this.findSquareCoordinates();
         
         this.replaceValidTiles(verticalIndexes, horizontalIndexes, squareCoordinates);
-
-        return verticalIndexes.length + horizontalIndexes.length + squareCoordinates.length;
     }
 
     replaceValidTiles(verticalIndexes, horizontalIndexes, squareCoordinates) {
@@ -468,11 +452,7 @@ export default class GameScene extends Phaser.Scene
     }
 
     getRandomBlocks() {
-        const arr = [];
-        for(let i = 0; i < maxActiveBlocks; i++) {
-            arr.push(blockDefinitions[this.getRandomBlockDefinitionIndex()]);
-        }
-        return arr;
+        return [blockDefinitions[this.getRandomBlockDefinitionIndex()], blockDefinitions[this.getRandomBlockDefinitionIndex()], blockDefinitions[this.getRandomBlockDefinitionIndex()]];
     }
 
     getRandomBlockDefinitionIndex() {
