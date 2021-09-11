@@ -13,9 +13,9 @@ const blockDefinitions = [
 
 export default class GameScene extends Phaser.Scene
 {
-    tiles = [ [0, 0, 1, 0, 0, 0, 0, 0, 0],
-              [1, 0, 0, 0, 0, 0, 0, 0, 0],
-              [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    tiles = [ [1, 1, 1, 0, 0, 0, 0, 0, 0],
+              [1, 1, 1, 0, 0, 0, 0, 0, 0],
+              [1, 1, 1, 0, 0, 0, 0, 0, 0],
               [0, 0, 0, 0, 0, 0, 0, 0, 0],
               [0, 0, 0, 0, 0, 0, 0, 0, 0],
               [0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -122,6 +122,7 @@ export default class GameScene extends Phaser.Scene
         });
 
         this.activeBlockDefinitions[this.chosenBlockIndex] = undefined;
+        this.replaceCorrectLinesAndSquares();
         this.redrawGrid();
         this.destroyBlocks();
         this.addNewBlocks();
@@ -138,6 +139,54 @@ export default class GameScene extends Phaser.Scene
         this.blockImages.flat().forEach(blockImage => {
             blockImage.destroy();
         })
+    }
+
+    replaceCorrectLinesAndSquares() {
+        console.log(this.findVerticalLineIndexes());
+        console.log(this.findHorizontalLineIndexes());
+        console.log(this.findSquareIndexes());
+    }
+
+    findVerticalLineIndexes() {
+        const indexes = []
+        this.tiles.forEach((line, idx) => {
+            if (line.every(x => x === 1)) {
+                indexes.push(idx);
+            }
+        });
+        return indexes;
+    }
+
+    findHorizontalLineIndexes() {
+        const indexes = []
+        for(let i = 0; i < gridSize; i++) {
+            let isValid = true;
+            for(let j = 0; j < gridSize; j++) {
+                if (this.tiles[j][i] === 0) {
+                    isValid = false;
+                    break;
+                }
+            }
+            if(isValid) {
+                indexes.push(i);
+            }
+        }
+        return indexes;
+    }
+
+    findSquareIndexes() {
+        const indexes = []
+        const tilesFlattened = this.tiles.flat();
+        for(let i = 0; i < gridSize; i++) {
+            const adjustedIndex = (i * 3) + (Math.floor(i / 3) * 18);
+            console.log(adjustedIndex);
+            if (tilesFlattened[adjustedIndex] === 1 && tilesFlattened[adjustedIndex + 1] === 1 && tilesFlattened[adjustedIndex + 2] === 1
+                && tilesFlattened[adjustedIndex + 9] === 1 && tilesFlattened[adjustedIndex + 10] === 1 && tilesFlattened[adjustedIndex + 11] === 1
+                && tilesFlattened[adjustedIndex + 18] === 1 && tilesFlattened[adjustedIndex + 19] === 1 && tilesFlattened[adjustedIndex + 20] === 1) {
+                    indexes.push(i);
+                }
+        }
+        return indexes;
     }
 
     createGrid() {
