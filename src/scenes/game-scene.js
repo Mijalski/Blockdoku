@@ -6,9 +6,53 @@ import Phaser from 'phaser';
 const gridSize = 9;
 const tilePngSize = 80;
 const blockDefinitions = [
-    [1,1,1],
-    [0,1,-1,1,1,1],
-    [1,-1,1,-1,1,1]
+    // Horizontal Lines
+    [1], 
+    [1,1], 
+    [1,1,1], 
+    [1,1,1,1],
+    [1,1,1,1,1],
+
+    // Vertical Lines
+    [1,-1,1],
+    [1,-1,1,-1,1],
+    [1,-1,1,-1,1,-1,1],
+    [1,-1,1,-1,1,-1,1,-1,1],
+
+    // Small L
+    [1,-1,1,1], // |_
+    [0,1,-1,1,1], // _|
+    [1,1,-1,0,1], // ^|
+    [1,1,-1,1], // |^
+
+    // L
+    [1,-1,1,-1,1,1], // |_
+    [0,1,-1,0,1,-1,1,1], // _|
+    [1,1,-1,0,1,-1,0,1], // ^|
+    [1,1,-1,1,0,-1,1,0], // |^
+
+    // BIG L
+    [1,-1,1,-1,1,1,1], // |__
+    [0,0,1,-1,0,0,1,-1,1,1,1], // __|
+    [1,1,1,-1,0,0,1,-1,0,0,1], // ^^|
+    [1,1,1,-1,1,-1,1], // |^^
+
+    // Pointer
+    [0,1,-1,1,1,1], // _|_
+    [1,-1,1,1,-1,1], // |-
+    [1,1,1,-1,0,1], // -.-
+    [0,1,-1,1,1,-1,0,1], // -|
+
+    // Two Dots
+    [1,-1,0,1],
+    [0,1,-1,1],
+
+    // Three Dots
+    [1,-1,0,1,-1,0,0,1],
+    [0,0,1,-1,0,1,-1,1],
+
+    // Others
+    [0,1,-1,1,1,1,-1,0,1] // -|-
 ];
 
 export default class GameScene extends Phaser.Scene
@@ -47,7 +91,7 @@ export default class GameScene extends Phaser.Scene
       
     create ()
     {
-        this.cameras.main.backgroundColor.setTo(255, 255, 255); 
+        this.cameras.main.backgroundColor.setTo(1, 255, 255); 
 
         this.margin = (this.cameras.main.width * 0.2);
         this.halfMargin = this.margin / 2;
@@ -61,7 +105,7 @@ export default class GameScene extends Phaser.Scene
         this.halfTileSize = this.tileSize / 2;
 
         this.blockPickerPositionX = this.screenSize / 3;
-        this.blockPickerPositionY = this.screenSize + (this.margin * 1.5);
+        this.blockPickerPositionY = this.screenSize + this.halfMargin;
 
         this.activeBlockDefinitions = this.getRandomBlocks();
 
@@ -232,8 +276,8 @@ export default class GameScene extends Phaser.Scene
         for(let i = 0; i < gridSize; i++) {
             for(let j = 0; j < gridSize; j++) {
                 this.tileImages[j].push(this.add.image(
-                                            this.margin + (j * this.tileSize) + j + this.halfTileSize, 
-                                            this.margin + (i * this.tileSize) + i + this.halfTileSize,
+                                            this.halfMargin + (j * this.tileSize) + j + this.halfTileSize, 
+                                            this.halfMargin / 3 + (i * this.tileSize) + i + this.halfTileSize,
                                             this.tiles[j][i] == 0 ? this.getTileImage(j, i) : 'block')
                                 .setScale(this.tileScale)
                                 .setInteractive()
@@ -248,8 +292,8 @@ export default class GameScene extends Phaser.Scene
         for(let i = 0; i < gridSize; i++) {
             for(let j = 0; j < gridSize; j++) {
                 this.tileImages[j][i] = this.add.image(
-                                                this.margin + (j * this.tileSize) + j + this.halfTileSize, 
-                                                this.margin + (i * this.tileSize) + i + this.halfTileSize,
+                                                this.halfMargin + (j * this.tileSize) + j + this.halfTileSize, 
+                                                this.halfMargin / 3  + (i * this.tileSize) + i + this.halfTileSize,
                                                 this.tiles[j][i] == 0 ? this.getTileImage(j, i) : 'block')
                                         .setScale(this.tileScale)
                                         .setInteractive()
@@ -346,7 +390,7 @@ export default class GameScene extends Phaser.Scene
     renderBlocks() {
         this.activeBlockDefinitions.forEach((blockDefinition, idx) => {
             if (blockDefinition) {
-                let x = this.blockPickerPositionX * idx + this.margin;
+                let x = this.blockPickerPositionX * idx + this.halfMargin;
                 let y = this.blockPickerPositionY;
                 this.renderBlock(blockDefinition, x, y, idx);
             }
@@ -381,6 +425,10 @@ export default class GameScene extends Phaser.Scene
     }
 
     getRandomBlocks() {
-        return [blockDefinitions[0], blockDefinitions[1], blockDefinitions[2]];
+        return [blockDefinitions[this.getRandomBlockDefinitionIndex()], blockDefinitions[this.getRandomBlockDefinitionIndex()], blockDefinitions[this.getRandomBlockDefinitionIndex()]];
+    }
+
+    getRandomBlockDefinitionIndex() {
+        return Math.floor(Math.random() * (blockDefinitions.length - 0));
     }
 }
