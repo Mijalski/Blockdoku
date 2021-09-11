@@ -146,10 +146,27 @@ export default class GameScene extends Phaser.Scene
         const horizontalIndexes = this.findHorizontalLineIndexes();
         const squareCoordinates = this.findSquareCoordinates();
         
+        this.replaceValidTiles(verticalIndexes, horizontalIndexes, squareCoordinates);
+    }
+
+    replaceValidTiles(verticalIndexes, horizontalIndexes, squareCoordinates) {
+        verticalIndexes.forEach(idx => {
+            for(let i = 0; i < gridSize; i++) {
+                this.tiles[idx][i] = 0;
+            }
+        });
+        horizontalIndexes.forEach(idx => {
+            for(let j = 0; j < gridSize; j++) {
+                this.tiles[j][idx] = 0;
+            }
+        });
+        squareCoordinates.flat().forEach(([j, i]) => {
+            this.tiles[j][i] = 0;
+        });
     }
 
     findVerticalLineIndexes() {
-        const indexes = []
+        const indexes = [];
         this.tiles.forEach((line, idx) => {
             if (line.every(x => x === 1)) {
                 indexes.push(idx);
