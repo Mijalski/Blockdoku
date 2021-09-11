@@ -124,7 +124,14 @@ export default class GameScene extends Phaser.Scene
         this.activeBlockDefinitions[this.chosenBlockIndex] = undefined;
         this.redrawGrid();
         this.destroyBlocks();
+        this.addNewBlocks();
         this.renderBlocks();
+    }
+
+    addNewBlocks() {
+        if (this.activeBlockDefinitions.every(x => x == undefined)) {
+            this.activeBlockDefinitions = this.getRandomBlocks();
+        }
     }
 
     destroyBlocks() {
