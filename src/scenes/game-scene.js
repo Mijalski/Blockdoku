@@ -142,9 +142,10 @@ export default class GameScene extends Phaser.Scene
     }
 
     replaceCorrectLinesAndSquares() {
-        console.log(this.findVerticalLineIndexes());
-        console.log(this.findHorizontalLineIndexes());
-        console.log(this.findSquareIndexes());
+        const verticalIndexes = this.findVerticalLineIndexes();
+        const horizontalIndexes = this.findHorizontalLineIndexes();
+        const squareCoordinates = this.findSquareCoordinates();
+        
     }
 
     findVerticalLineIndexes() {
@@ -174,19 +175,40 @@ export default class GameScene extends Phaser.Scene
         return indexes;
     }
 
-    findSquareIndexes() {
-        const indexes = []
-        const tilesFlattened = this.tiles.flat();
+    findSquareCoordinates() {
+        const coordinates = []
         for(let i = 0; i < gridSize; i++) {
-            const adjustedIndex = (i * 3) + (Math.floor(i / 3) * 18);
-            console.log(adjustedIndex);
-            if (tilesFlattened[adjustedIndex] === 1 && tilesFlattened[adjustedIndex + 1] === 1 && tilesFlattened[adjustedIndex + 2] === 1
-                && tilesFlattened[adjustedIndex + 9] === 1 && tilesFlattened[adjustedIndex + 10] === 1 && tilesFlattened[adjustedIndex + 11] === 1
-                && tilesFlattened[adjustedIndex + 18] === 1 && tilesFlattened[adjustedIndex + 19] === 1 && tilesFlattened[adjustedIndex + 20] === 1) {
-                    indexes.push(i);
+            const currentCoordinates = this.getTileCoordinatesForSquareIndex(i);
+            let isValid = true;
+            for(let [j, i] of currentCoordinates) {
+                if (this.tiles[j][i] === 0) {
+                    isValid = false;
+                    break;
                 }
+            }
+            if(isValid) {
+                coordinates.push(currentCoordinates);
+            }
         }
-        return indexes;
+        return coordinates;
+    }
+
+    getTileCoordinatesForSquareIndex(squareIndex) {
+        if (squareIndex < 3) {
+            return [[0, squareIndex * 3], [0, squareIndex * 3 + 1], [0, squareIndex * 3 + 2],
+                    [1, squareIndex * 3], [1, squareIndex * 3 + 1], [1, squareIndex * 3 + 2],
+                    [2, squareIndex * 3], [2, squareIndex * 3 + 1], [2, squareIndex * 3 + 2]];
+        }
+        if (squareIndex < 6) {
+            squareIndex = squareIndex % 3;
+            return [[3, squareIndex * 3], [3, squareIndex * 3 + 1], [3, squareIndex * 3 + 2],
+                    [4, squareIndex * 3], [4, squareIndex * 3 + 1], [4, squareIndex * 3 + 2],
+                    [5, squareIndex * 3], [5, squareIndex * 3 + 1], [5, squareIndex * 3 + 2]];
+        }
+        squareIndex = squareIndex % 6;
+        return [[6, squareIndex * 3], [6, squareIndex * 3 + 1], [6, squareIndex * 3 + 2],
+                [7, squareIndex * 3], [7, squareIndex * 3 + 1], [7, squareIndex * 3 + 2],
+                [8, squareIndex * 3], [8, squareIndex * 3 + 1], [8, squareIndex * 3 + 2]];
     }
 
     createGrid() {
