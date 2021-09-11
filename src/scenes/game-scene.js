@@ -83,7 +83,7 @@ export default class GameScene extends Phaser.Scene
     blockPickerPositionX; blockPickerPositionY;
     chosenBlockDefinition; chosenBlockImages; chosenBlockIndex;
     chosenGridTileCoordinates;
-    score;
+    score; scoreText;
 
     constructor()
     {
@@ -128,6 +128,7 @@ export default class GameScene extends Phaser.Scene
         }
         
         this.score = 0;
+        this.scoreText = this.add.text(this.cameras.main.width / 2, 16, '0', { fontSize: '32px', fill: '#000' }).setOrigin(0.5);
         this.createGrid();
         this.renderBlocks();
     }
@@ -182,7 +183,9 @@ export default class GameScene extends Phaser.Scene
 
         this.activeBlockDefinitions[this.chosenBlockIndex] = undefined;
         const linesAndSquaresCount = this.replaceCorrectLinesAndSquares();
-        this.score += linesAndSquaresCount * linesAndSquaresCount * 20;
+        scoreToAdd += linesAndSquaresCount * linesAndSquaresCount * 20;
+        this.score += scoreToAdd;
+        this.scoreText.setText(this.score);
         this.redrawGrid();
         this.destroyBlocks();
         this.addNewBlocks();
@@ -192,11 +195,10 @@ export default class GameScene extends Phaser.Scene
                 this.unplaceableActiveBlockDefinitions.push(blockDefinition);
             }
         });
-        if(this.unplaceableActiveBlockDefinitions.length === maxActiveBlocks) {
+        if(this.unplaceableActiveBlockDefinitions.length === this.activeBlockDefinitions.filter(x => x != undefined).length) {
             this.finishGame();
         }
         this.renderBlocks();
-        console.log(this.score);
     }
 
     addNewBlocks() {
@@ -305,7 +307,7 @@ export default class GameScene extends Phaser.Scene
             for(let j = 0; j < gridSize; j++) {
                 this.tileImages[j].push(this.add.image(
                                             this.halfMargin + (j * this.tileSize) + j + this.halfTileSize, 
-                                            this.halfMargin / 3 + (i * this.tileSize) + i + this.halfTileSize,
+                                            this.halfMargin / 2 + (i * this.tileSize) + i + this.halfTileSize,
                                             this.tiles[j][i] == 0 ? this.getTileImage(j, i) : 'block')
                                 .setScale(this.tileScale)
                                 .setInteractive()
@@ -321,7 +323,7 @@ export default class GameScene extends Phaser.Scene
             for(let j = 0; j < gridSize; j++) {
                 this.tileImages[j][i] = this.add.image(
                                                 this.halfMargin + (j * this.tileSize) + j + this.halfTileSize, 
-                                                this.halfMargin / 3  + (i * this.tileSize) + i + this.halfTileSize,
+                                                this.halfMargin / 2  + (i * this.tileSize) + i + this.halfTileSize,
                                                 this.tiles[j][i] == 0 ? this.getTileImage(j, i) : 'block')
                                         .setScale(this.tileScale)
                                         .setInteractive()
