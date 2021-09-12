@@ -76,7 +76,8 @@ export default class GameScene extends Phaser.Scene
     tileImages;
     blockImages;
     tileScale; pickerTileScale;
-    margin; halfMargin;
+    horizontalMargin; halfHorizontalMargin;
+    verticalMargin; halfVerticalMargin;
     screenSize;
     tileSize; halfTileSize;
     activeBlockDefinitions; unplaceableActiveBlockDefinitions;
@@ -116,19 +117,22 @@ export default class GameScene extends Phaser.Scene
 
         this.cameras.main.backgroundColor.setTo(255, 255, 255); 
 
-        this.margin = (this.cameras.main.width * 0.2);
-        this.halfMargin = this.margin / 2;
+        this.verticalMargin = (this.cameras.main.height * 0.3);
+        this.halfVerticalMargin = this.verticalMargin / 2;
 
-        this.screenSize = this.cameras.main.width - (this.margin);
+        this.screenSize = this.cameras.main.height - (this.verticalMargin);
 
         this.tileScale = (tilePngSize * this.screenSize / (gridSize * tilePngSize)) / tilePngSize;
         this.pickerTileScale = this.tileScale / 2;
+
+        this.horizontalMargin = this.cameras.main.width - this.screenSize;
+        this.halfHorizontalMargin = this.horizontalMargin / 2;
 
         this.tileSize = this.screenSize / 9;
         this.halfTileSize = this.tileSize / 2;
 
         this.blockPickerPositionX = this.screenSize / 3;
-        this.blockPickerPositionY = this.screenSize + this.halfMargin;
+        this.blockPickerPositionY = this.screenSize + this.halfVerticalMargin;
 
         this.activeBlockDefinitions = this.getRandomBlocks();
 
@@ -363,8 +367,8 @@ export default class GameScene extends Phaser.Scene
     }
 
     getTile(j, i) {
-        return this.add.image(this.halfMargin + (j * this.tileSize) + j + this.halfTileSize,
-                            this.halfMargin / 2 + (i * this.tileSize) + i + this.halfTileSize,
+        return this.add.image(this.halfHorizontalMargin + (j * this.tileSize) + j + this.halfTileSize,
+                            this.halfVerticalMargin / 2 + (i * this.tileSize) + i + this.halfTileSize,
                             this.tiles[j][i] === 0 ? this.getTileImage(j, i) : 'block')
                         .setScale(this.tileScale)
                         .setInteractive()
@@ -471,7 +475,7 @@ export default class GameScene extends Phaser.Scene
         this.blockImages = [];
         this.activeBlockDefinitions.forEach((blockDefinition, idx) => {
             if (blockDefinition) {
-                let x = this.blockPickerPositionX * idx + this.halfMargin;
+                let x = this.blockPickerPositionX * idx + this.halfHorizontalMargin;
                 let y = this.blockPickerPositionY;
                 this.renderBlock(blockDefinition, x, y, idx);
             }
@@ -504,7 +508,7 @@ export default class GameScene extends Phaser.Scene
 
     renderPickUpZones() {
         for (let i = 0; i < maxActiveBlocks; i++) {
-            this.add.image(this.blockPickerPositionX * i + this.halfMargin + this.tileSize, this.blockPickerPositionY + this.margin, 'empty')
+            this.add.image(this.blockPickerPositionX * i + this.halfHorizontalMargin + this.tileSize, this.blockPickerPositionY + this.halfVerticalMargin, 'empty')
                 .setScale(80)
                 .setDepth(900)
                 .setInteractive({ useHandCursor: true })

@@ -23,6 +23,7 @@ export default class GameOverScene extends Phaser.Scene
         
         this.add.text(this.cameras.main.width / 2, this.cameras.main.height / 3, 'Game over!', { fontSize: '32px', fill: '#000' }).setOrigin(0.5);
         this.add.text(this.cameras.main.width / 2, this.cameras.main.height / 2, `Score: ${this.score}`, { fontSize: '48px', fill: '#000' }).setOrigin(0.5);
+        this.add.text(this.cameras.main.width / 2, this.cameras.main.height - 70, 'By Hubert Mijalski', { fontSize: '32px', fill: '#000' }).setOrigin(0.5);
         
         this.clickButton = this.add.text(this.cameras.main.width / 2, this.cameras.main.height / 2 + 100, 'Play Again', { fontSize: '32px', fill: '#000' })
                                     .setOrigin(0.5)
