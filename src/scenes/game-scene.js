@@ -39,6 +39,12 @@ const blockDefinitions = [
     [1,1,1,-1,0,0,1,-1,0,0,1], // ^^|
     [1,1,1,-1,1,-1,1], // |^^
 
+    // U
+    [1,0,1,-1,1,1,1], // |_|
+    [1,1,-1,1,-1,1,1], // |=
+    [1,1,-1,0,1,-1,1,1], // =|
+    [1,1,1,-1,1,0,1], // |^|
+
     // T
     [0,1,-1,0,1,-1,1,1,1], // _|_
     [1,1,1,-1,0,1,-1,0,1], // ^|^
@@ -90,7 +96,7 @@ export default class GameScene extends Phaser.Scene
         this.load.image('tile1', tile1Png);
         this.load.image('tile2', tile2Png);
     }
-      
+    
     create()
     {
         this.tiles = [ [0, 0, 0, 0, 0, 0, 0, 0, 0],
