@@ -1,6 +1,7 @@
 import blockPng from './../assets/block.png';
 import tile1Png from './../assets/tile1.png';
 import tile2Png from './../assets/tile2.png';
+import emptyPng from './../assets/empty.png';
 import destroyedBlockPng from './../assets/destroyed-block.png';
 import Phaser from 'phaser';
 
@@ -95,6 +96,7 @@ export default class GameScene extends Phaser.Scene
         this.load.image('destroyed-block', destroyedBlockPng);
         this.load.image('tile1', tile1Png);
         this.load.image('tile2', tile2Png);
+        this.load.image('empty', emptyPng);
     }
     
     create()
@@ -136,19 +138,6 @@ export default class GameScene extends Phaser.Scene
             }
         });
 
-        this.input.on('pointerdown', pointer => { 
-            const closestImage = this.blockImages.flat()
-                .map(img => [Phaser.Math.Distance.BetweenPoints(pointer.position, img), img]) // select distance and block index
-                .sort((a, b) => a[0] - b[0])
-                [0];
-
-            if (closestImage[0] < 100) {
-                const index = closestImage[1].getData('index');
-                const blockImages = this.blockImages.filter(image => image[0].getData('index') === index)[0];
-                this.pickUpBlock(closestImage[1].getData('can-be-picked-up'), blockImages, this.activeBlockDefinitions[index], index); 
-            }
-        });
-
         for (let i = 0; i < gridSize; i++) {
             this.tileImages[i] = [];
         }
@@ -156,6 +145,7 @@ export default class GameScene extends Phaser.Scene
         this.score = 0;
         this.scoreText = this.add.text(this.cameras.main.width / 2, 16, '0', { fontSize: '32px', fill: '#000' }).setOrigin(0.5);
         this.createGrid();
+        this.renderPickUpZones();
         this.renderBlocks();
     }
 
@@ -235,7 +225,9 @@ export default class GameScene extends Phaser.Scene
 
     destroyBlocks() {
         this.blockImages.flat().forEach(blockImage => {
-            blockImage.destroy();
+            if (blockImage) {
+                blockImage.destroy();
+            }
         })
     }
 
@@ -475,6 +467,9 @@ export default class GameScene extends Phaser.Scene
                 let y = this.blockPickerPositionY;
                 this.renderBlock(blockDefinition, x, y, idx);
             }
+            else {
+                this.blockImages.push(undefined);
+            }
         });
     }
 
@@ -492,28 +487,40 @@ export default class GameScene extends Phaser.Scene
                     blockImages.push(this.add.image(x + this.halfTileSize, y + this.halfTileSize, 'block')
                                     .setScale(this.pickerTileScale)
                                     .setTint(canBePlaced ? 0xffffff : 0x333333)
-                                    .setData('index', index)
-                                    .setData('can-be-picked-up', canBePlaced));
+                                    .setData('index', index));
                 }
             }
         });
         this.blockImages.push(blockImages);
     }
 
-    pickUpBlock(canBePlaced, blockImages, blockDefinition, index) {
-        if (canBePlaced) {
-            blockImages.forEach(img => {
-                img.setScale(this.tileScale);
-            });
-            this.chosenBlockImages = blockImages;
-            this.chosenBlockDefinition = blockDefinition;
-            this.chosenBlockIndex = index;
+    renderPickUpZones() {
+        for (let i = 0; i < maxActiveBlocks; i++) {
+            this.add.image(this.blockPickerPositionX * i + this.halfMargin + this.tileSize, this.blockPickerPositionY + this.margin, 'empty')
+                .setScale(80)
+                .setDepth(900)
+                .setInteractive({ useHandCursor: true })
+                .on('pointerdown', pointer => {
+                    if (!this.unplaceableActiveBlockDefinitions.find(x => x === this.activeBlockDefinitions[i])) {
+                        const blockImages = this.blockImages[i];
+                        this.pickUpBlock(blockImages, this.activeBlockDefinitions[i], i); 
+                    }
+                });
         }
     }
 
+    pickUpBlock(blockImages, blockDefinition, index) {
+        blockImages.forEach(img => {
+            img.setScale(this.tileScale);
+        });
+        this.chosenBlockImages = blockImages;
+        this.chosenBlockDefinition = blockDefinition;
+        this.chosenBlockIndex = index;
+    }
+
     hasBlockAnyValidPlacement(blockDefinition) {
-        for(let i = 0; i < gridSize; i++) {
-            for(let j = 0; j < gridSize; j++) {
+        for (let i = 0; i < gridSize; i++) {
+            for (let j = 0; j < gridSize; j++) {
                 if (this.isValidPlacement(blockDefinition, j, i)) {
                     return true
                 }
