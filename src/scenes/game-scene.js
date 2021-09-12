@@ -189,7 +189,7 @@ export default class GameScene extends Phaser.Scene
         });
 
         this.activeBlockDefinitions[this.chosenBlockIndex] = undefined;
-        const linesAndSquaresCount = this.replaceCorrectLinesAndSquares();
+        const linesAndSquaresCount = this.replaceCorrectLinesAndSquares() / 9;
         scoreToAdd += linesAndSquaresCount * linesAndSquaresCount * 20;
         this.score += scoreToAdd;
         this.scoreText.setText(this.score);
@@ -221,41 +221,44 @@ export default class GameScene extends Phaser.Scene
     }
 
     replaceCorrectLinesAndSquares() {
+        const indexes = this.getIndexesOfCorrectLinesAndSquares();
+        this.replaceValidTiles(indexes);
+        this.createDisappearingTileAnimation(indexes);
+        return indexes.length;
+    }
+
+    replaceValidTiles(indexes) {
+        indexes.forEach(([j, i]) => {
+            this.tiles[j][i] = 0;
+        });
+    }
+
+    getIndexesOfCorrectLinesAndSquares() {
         const verticalIndexes = this.findVerticalLineIndexes();
         const horizontalIndexes = this.findHorizontalLineIndexes();
         const squareCoordinates = this.findSquareCoordinates();
         
-        this.replaceValidTiles(verticalIndexes, horizontalIndexes, squareCoordinates);
+        const indexesCombined = squareCoordinates.flat();
 
-        return verticalIndexes.length + horizontalIndexes.length + squareCoordinates.length;
-    }
-
-    replaceValidTiles(verticalIndexes, horizontalIndexes, squareCoordinates) {
-        const tileImages = [];
         verticalIndexes.forEach(idx => {
             for(let i = 0; i < gridSize; i++) {
-                this.tiles[idx][i] = 0;
-                tileImages.push(this.tileImages[idx][i]);
+                indexesCombined.push([idx, i]);
             }
         });
+
         horizontalIndexes.forEach(idx => {
             for(let j = 0; j < gridSize; j++) {
-                this.tiles[j][idx] = 0;
-                tileImages.push(this.tileImages[j][idx]);
+                indexesCombined.push([j, idx]);
             }
         });
-        squareCoordinates.flat().forEach(([j, i]) => {
-            this.tiles[j][i] = 0;
-            tileImages.push(this.tileImages[j][i]);
-        });
-        
-        this.createDisappearingTileAnimation(tileImages);
+
+        return indexesCombined;
     }
 
-    createDisappearingTileAnimation(tileImages) {
+    createDisappearingTileAnimation(indexes) {
         const destroyBlocks = [];
-        tileImages.forEach(tileImage => {
-            destroyBlocks.push(this.add.image(tileImage.x, tileImage.y, 'destroyed-block')
+        indexes.forEach(([j, i]) => {
+            destroyBlocks.push(this.add.image(this.tileImages[j][i].x, this.tileImages[j][i].y, 'destroyed-block')
                         .setScale(this.tileScale*1.1)
                         .setDepth(1000));
         });
@@ -394,6 +397,8 @@ export default class GameScene extends Phaser.Scene
                 j++;
             }
         });
+
+        this.getIndexesOfCorrectLinesAndSquares
     }
 
     isValidPlacement(blockDefinition, j, i) {
