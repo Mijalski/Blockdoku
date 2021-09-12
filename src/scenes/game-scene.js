@@ -269,10 +269,6 @@ export default class GameScene extends Phaser.Scene
         });
     }
 
-    xd() {
-        console.log('XDD');
-    }
-
     findVerticalLineIndexes() {
         const indexes = [];
         this.tiles.forEach((line, idx) => {
