@@ -376,6 +376,7 @@ export default class GameScene extends Phaser.Scene
 
     pointerOverGridTile(j, i) {
         if (this.chosenBlockDefinition) {
+            this.input.manager.setCursor({ cursor: 'grabbing' });
             this.resetGridHighlight();
             if (this.isValidPlacement(this.chosenBlockDefinition, j, i)) {
                 this.chosenGridTileCoordinates = [j, i];
@@ -508,6 +509,7 @@ export default class GameScene extends Phaser.Scene
                 .setDepth(900)
                 .setInteractive({ useHandCursor: true })
                 .on('pointerdown', pointer => {
+                    this.input.manager.setCursor({ cursor: 'grabbing' });
                     if (!this.unplaceableActiveBlockDefinitions.find(x => x === this.activeBlockDefinitions[i])) {
                         const blockImages = this.blockImages[i];
                         this.pickUpBlock(blockImages, this.activeBlockDefinitions[i], i); 
