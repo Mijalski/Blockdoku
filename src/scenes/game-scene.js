@@ -64,22 +64,14 @@ const blockDefinitions = [
 
 export default class GameScene extends Phaser.Scene
 {
-    tiles = [ [1, 1, 1, 0, 0, 0, 0, 0, 0],
-              [1, 1, 1, 0, 0, 0, 0, 0, 0],
-              [1, 1, 1, 0, 0, 0, 0, 0, 0],
-              [0, 0, 0, 0, 0, 0, 0, 0, 0],
-              [0, 0, 0, 0, 0, 0, 0, 0, 0],
-              [0, 0, 0, 0, 0, 0, 0, 0, 0],
-              [0, 0, 0, 0, 0, 0, 0, 0, 0],
-              [0, 0, 0, 0, 0, 1, 0, 0, 0],
-              [0, 0, 0, 0, 0, 1, 0, 0, 0] ];
-    tileImages = [];
-    blockImages = [];
+    tiles;
+    tileImages;
+    blockImages;
     tileScale; pickerTileScale;
     margin; halfMargin;
     screenSize;
     tileSize; halfTileSize;
-    activeBlockDefinitions; unplaceableActiveBlockDefinitions = [];
+    activeBlockDefinitions; unplaceableActiveBlockDefinitions;
     blockPickerPositionX; blockPickerPositionY;
     chosenBlockDefinition; chosenBlockImages; chosenBlockIndex;
     chosenGridTileCoordinates;
@@ -87,7 +79,7 @@ export default class GameScene extends Phaser.Scene
 
     constructor()
     {
-        super();
+        super('game-scene');
     }
 
     preload()
@@ -99,6 +91,19 @@ export default class GameScene extends Phaser.Scene
       
     create()
     {
+        this.tiles = [ [1, 1, 1, 0, 0, 0, 0, 0, 0],
+                    [1, 1, 1, 0, 0, 0, 0, 0, 0],
+                    [1, 1, 1, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 1, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 1, 0, 0, 0] ];
+        this.tileImages = [];
+        this.blockImages = [];
+        this.unplaceableActiveBlockDefinitions = [];
+
         this.cameras.main.backgroundColor.setTo(255, 255, 255); 
 
         this.margin = (this.cameras.main.width * 0.2);
@@ -198,6 +203,7 @@ export default class GameScene extends Phaser.Scene
         if(this.unplaceableActiveBlockDefinitions.length === this.activeBlockDefinitions.filter(x => x != undefined).length) {
             this.finishGame();
         }
+        this.finishGame();
         this.renderBlocks();
     }
 
