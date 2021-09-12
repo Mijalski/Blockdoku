@@ -91,15 +91,15 @@ export default class GameScene extends Phaser.Scene
       
     create()
     {
-        this.tiles = [ [1, 1, 1, 0, 0, 0, 0, 0, 0],
-                    [1, 1, 1, 0, 0, 0, 0, 0, 0],
-                    [1, 1, 1, 0, 0, 0, 0, 0, 0],
+        this.tiles = [ [0, 0, 0, 0, 0, 0, 0, 0, 0],
                     [0, 0, 0, 0, 0, 0, 0, 0, 0],
                     [0, 0, 0, 0, 0, 0, 0, 0, 0],
                     [0, 0, 0, 0, 0, 0, 0, 0, 0],
                     [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 1, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 1, 0, 0, 0] ];
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0] ];
         this.tileImages = [];
         this.blockImages = [];
         this.unplaceableActiveBlockDefinitions = [];
@@ -203,7 +203,6 @@ export default class GameScene extends Phaser.Scene
         if(this.unplaceableActiveBlockDefinitions.length === this.activeBlockDefinitions.filter(x => x != undefined).length) {
             this.finishGame();
         }
-        this.finishGame();
         this.renderBlocks();
     }
 
