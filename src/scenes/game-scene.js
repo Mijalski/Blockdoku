@@ -1,6 +1,7 @@
 import blockPng from './../assets/block.png';
 import tile1Png from './../assets/tile1.png';
 import tile2Png from './../assets/tile2.png';
+import destroyedBlockPng from './../assets/destroyed-block.png';
 import Phaser from 'phaser';
 
 const gridSize = 9;
@@ -85,6 +86,7 @@ export default class GameScene extends Phaser.Scene
     preload()
     {
         this.load.image('block', blockPng);
+        this.load.image('destroyed-block', destroyedBlockPng);
         this.load.image('tile1', tile1Png);
         this.load.image('tile2', tile2Png);
     }
@@ -229,19 +231,46 @@ export default class GameScene extends Phaser.Scene
     }
 
     replaceValidTiles(verticalIndexes, horizontalIndexes, squareCoordinates) {
+        const tileImages = [];
         verticalIndexes.forEach(idx => {
             for(let i = 0; i < gridSize; i++) {
                 this.tiles[idx][i] = 0;
+                tileImages.push(this.tileImages[idx][i]);
             }
         });
         horizontalIndexes.forEach(idx => {
             for(let j = 0; j < gridSize; j++) {
                 this.tiles[j][idx] = 0;
+                tileImages.push(this.tileImages[j][idx]);
             }
         });
         squareCoordinates.flat().forEach(([j, i]) => {
             this.tiles[j][i] = 0;
+            tileImages.push(this.tileImages[j][i]);
         });
+        
+        this.createDisappearingTileAnimation(tileImages);
+    }
+
+    createDisappearingTileAnimation(tileImages) {
+        const destroyBlocks = [];
+        tileImages.forEach(tileImage => {
+            destroyBlocks.push(this.add.image(tileImage.x, tileImage.y, 'destroyed-block')
+                        .setScale(this.tileScale*1.1)
+                        .setDepth(1000));
+        });
+        this.tweens.add({
+            targets: destroyBlocks,
+            scaleX: 0,
+            scaleY: 0,
+            ease: 'Sine.easeInOut',
+            duration: 400,
+            yoyo: false
+        });
+    }
+
+    xd() {
+        console.log('XDD');
     }
 
     findVerticalLineIndexes() {
@@ -310,15 +339,7 @@ export default class GameScene extends Phaser.Scene
     createGrid() {
         for(let i = 0; i < gridSize; i++) {
             for(let j = 0; j < gridSize; j++) {
-                this.tileImages[j].push(this.add.image(
-                                            this.halfMargin + (j * this.tileSize) + j + this.halfTileSize, 
-                                            this.halfMargin / 2 + (i * this.tileSize) + i + this.halfTileSize,
-                                            this.tiles[j][i] == 0 ? this.getTileImage(j, i) : 'block')
-                                .setScale(this.tileScale)
-                                .setInteractive()
-                                .on('pointerover', pointer => {
-                                    this.pointerOverGridTile(j, i);
-                                }));
+                this.tileImages[j].push(this.getTile(j, i));
             }
         }
     }
@@ -326,18 +347,22 @@ export default class GameScene extends Phaser.Scene
     redrawGrid() {
         for(let i = 0; i < gridSize; i++) {
             for(let j = 0; j < gridSize; j++) {
-                this.tileImages[j][i] = this.add.image(
-                                                this.halfMargin + (j * this.tileSize) + j + this.halfTileSize, 
-                                                this.halfMargin / 2  + (i * this.tileSize) + i + this.halfTileSize,
-                                                this.tiles[j][i] == 0 ? this.getTileImage(j, i) : 'block')
-                                        .setScale(this.tileScale)
-                                        .setInteractive()
-                                        .on('pointerover', pointer => {
-                                            this.pointerOverGridTile(j, i);
-                                        });
+                this.tileImages[j][i] = this.getTile(j, i);
             }
         }
     }
+
+    getTile(j, i) {
+        return this.add.image(this.halfMargin + (j * this.tileSize) + j + this.halfTileSize,
+                            this.halfMargin / 2 + (i * this.tileSize) + i + this.halfTileSize,
+                            this.tiles[j][i] === 0 ? this.getTileImage(j, i) : 'block')
+                        .setScale(this.tileScale)
+                        .setInteractive()
+                        .on('pointerover', pointer => {
+                            this.pointerOverGridTile(j, i);
+                        });
+    }
+
 
     pointerOverGridTile(j, i) {
         if (this.chosenBlockDefinition) {
@@ -354,7 +379,7 @@ export default class GameScene extends Phaser.Scene
     resetGridHighlight() {
         for(let i = 0; i < gridSize; i++) {
             for(let j = 0; j < gridSize; j++) {
-                this.tileImages[i][j].setTint(0xffffff);
+                this.tileImages[j][i].setTint(0xffffff);
             }
         }
     }
