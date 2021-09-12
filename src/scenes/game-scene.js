@@ -232,7 +232,7 @@ export default class GameScene extends Phaser.Scene
     }
 
     replaceCorrectLinesAndSquares() {
-        const indexes = this.getIndexesOfCorrectLinesAndSquares();
+        const indexes = this.getIndexesOfCorrectLinesAndSquares([]);
         this.replaceValidTiles(indexes);
         this.createDisappearingTileAnimation(indexes);
         return indexes.length;
@@ -244,10 +244,10 @@ export default class GameScene extends Phaser.Scene
         });
     }
 
-    getIndexesOfCorrectLinesAndSquares() {
-        const verticalIndexes = this.findVerticalLineIndexes();
-        const horizontalIndexes = this.findHorizontalLineIndexes();
-        const squareCoordinates = this.findSquareCoordinates();
+    getIndexesOfCorrectLinesAndSquares(potentialCoordinates) {
+        const verticalIndexes = this.findVerticalLineIndexes(potentialCoordinates);
+        const horizontalIndexes = this.findHorizontalLineIndexes(potentialCoordinates);
+        const squareCoordinates = this.findSquareCoordinates(potentialCoordinates);
         
         const indexesCombined = squareCoordinates.flat();
 
@@ -283,22 +283,22 @@ export default class GameScene extends Phaser.Scene
         });
     }
 
-    findVerticalLineIndexes() {
+    findVerticalLineIndexes(potentialCoordinates) {
         const indexes = [];
         this.tiles.forEach((line, idx) => {
-            if (line.every(x => x === 1)) {
+            if (line.every((el, j) => el === 1 || potentialCoordinates.find(pos => pos[0] === idx && pos[1] === j))) {
                 indexes.push(idx);
             }
         });
         return indexes;
     }
 
-    findHorizontalLineIndexes() {
+    findHorizontalLineIndexes(potentialCoordinates) {
         const indexes = []
         for(let i = 0; i < gridSize; i++) {
             let isValid = true;
             for(let j = 0; j < gridSize; j++) {
-                if (this.tiles[j][i] === 0) {
+                if (this.tiles[j][i] === 0 && !potentialCoordinates.find(pos => pos[0] === j && pos[1] === i)) {
                     isValid = false;
                     break;
                 }
@@ -310,13 +310,13 @@ export default class GameScene extends Phaser.Scene
         return indexes;
     }
 
-    findSquareCoordinates() {
+    findSquareCoordinates(potentialCoordinates) {
         const coordinates = []
         for(let i = 0; i < gridSize; i++) {
             const currentCoordinates = this.getTileCoordinatesForSquareIndex(i);
             let isValid = true;
             for(let [j, i] of currentCoordinates) {
-                if (this.tiles[j][i] === 0) {
+                if (this.tiles[j][i] === 0 && !potentialCoordinates.find(pos => pos[0] === j && pos[1] === i)) {
                     isValid = false;
                     break;
                 }
@@ -396,9 +396,11 @@ export default class GameScene extends Phaser.Scene
 
     highlightGrid(j, i) {
         const startingJ = j;
+        const potentialBlockDropCoordinates = [];
         this.chosenBlockDefinition.forEach(block => {
             if (block === 1) {
                 this.tileImages[j][i].setTint(0x333333);
+                potentialBlockDropCoordinates.push([j, i]);
             } 
 
             if (block === -1){
@@ -409,7 +411,12 @@ export default class GameScene extends Phaser.Scene
             }
         });
 
-        this.getIndexesOfCorrectLinesAndSquares
+        const gridTilesToHighlight = this.getIndexesOfCorrectLinesAndSquares(potentialBlockDropCoordinates);
+        gridTilesToHighlight.forEach(([j, i]) => {
+            if (!potentialBlockDropCoordinates.find(pos => pos[0] === j && pos[1] === i)) {
+                this.tileImages[j][i].setTint(0xd9d9d9);
+            }
+        });
     }
 
     isValidPlacement(blockDefinition, j, i) {
