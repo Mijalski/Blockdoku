@@ -117,22 +117,25 @@ export default class GameScene extends Phaser.Scene
 
         this.cameras.main.backgroundColor.setTo(255, 255, 255); 
 
-        this.verticalMargin = (this.cameras.main.height * 0.3);
+        const width = this.cameras.main.width;
+        const height = this.cameras.main.height;
+
+        this.verticalMargin = (height * 0.3);
         this.halfVerticalMargin = this.verticalMargin / 2;
 
-        this.screenSize = this.cameras.main.height - (this.verticalMargin);
+        this.screenSize = height - (this.verticalMargin);
 
         this.tileScale = (tilePngSize * this.screenSize / (gridSize * tilePngSize)) / tilePngSize;
         this.pickerTileScale = this.tileScale / 2;
 
-        this.horizontalMargin = this.cameras.main.width - this.screenSize;
+        this.horizontalMargin = width - this.screenSize;
         this.halfHorizontalMargin = this.horizontalMargin / 2;
 
         this.tileSize = this.screenSize / 9;
         this.halfTileSize = this.tileSize / 2;
 
         this.blockPickerPositionX = this.screenSize / 3;
-        this.blockPickerPositionY = this.screenSize + this.halfVerticalMargin;
+        this.blockPickerPositionY = height - this.halfVerticalMargin;
 
         this.activeBlockDefinitions = this.getRandomBlocks();
 
@@ -147,7 +150,7 @@ export default class GameScene extends Phaser.Scene
         }
         
         this.score = 0;
-        this.scoreText = this.add.text(this.cameras.main.width / 2, 16, '0', { fontSize: '32px', fill: '#000' }).setOrigin(0.5);
+        this.scoreText = this.add.text(width / 2, 64, '0', { fontSize: '64px', fill: '#000' }).setOrigin(0.5);
         this.createGrid();
         this.renderPickUpZones();
         this.renderBlocks();
@@ -508,8 +511,9 @@ export default class GameScene extends Phaser.Scene
 
     renderPickUpZones() {
         for (let i = 0; i < maxActiveBlocks; i++) {
-            this.add.image(this.blockPickerPositionX * i + this.halfHorizontalMargin + this.tileSize, this.blockPickerPositionY + this.halfVerticalMargin, 'empty')
-                .setScale(80)
+            this.add.image(this.blockPickerPositionX * i + this.halfHorizontalMargin + this.tileSize + this.halfTileSize, 
+                            this.blockPickerPositionY + this.halfVerticalMargin, 'empty')
+                .setScale(100 * this.tileScale)
                 .setDepth(900)
                 .setInteractive({ useHandCursor: true })
                 .on('pointerdown', pointer => {
