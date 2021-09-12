@@ -130,9 +130,22 @@ export default class GameScene extends Phaser.Scene
 
         this.activeBlockDefinitions = this.getRandomBlocks();
 
-        this.input.on('pointerup', (pointer, objectsClicked) => {   
+        this.input.on('pointerup', () => {   
             if (this.chosenBlockDefinition) {
                 this.dropBlock(); 
+            }
+        });
+
+        this.input.on('pointerdown', pointer => { 
+            const closestImage = this.blockImages.flat()
+                .map(img => [Phaser.Math.Distance.BetweenPoints(pointer.position, img), img]) // select distance and block index
+                .sort((a, b) => a[0] - b[0])
+                [0];
+
+            if (closestImage[0] < 100) {
+                const index = closestImage[1].getData('index');
+                const blockImages = this.blockImages.filter(image => image[0].getData('index') === index)[0];
+                this.pickUpBlock(closestImage[1].getData('can-be-picked-up'), blockImages, this.activeBlockDefinitions[index], index); 
             }
         });
 
@@ -455,6 +468,7 @@ export default class GameScene extends Phaser.Scene
     }
 
     renderBlocks() {
+        this.blockImages = [];
         this.activeBlockDefinitions.forEach((blockDefinition, idx) => {
             if (blockDefinition) {
                 let x = this.blockPickerPositionX * idx + this.halfMargin;
@@ -477,22 +491,24 @@ export default class GameScene extends Phaser.Scene
                 if (block === 1) {
                     blockImages.push(this.add.image(x + this.halfTileSize, y + this.halfTileSize, 'block')
                                     .setScale(this.pickerTileScale)
-                                    .setInteractive()
                                     .setTint(canBePlaced ? 0xffffff : 0x333333)
-                                    .on('pointerdown', pointer => {
-                                        if (canBePlaced) {
-                                            blockImages.forEach(img => {
-                                                img.setScale(this.tileScale);
-                                            });
-                                            this.chosenBlockImages = blockImages;
-                                            this.chosenBlockDefinition = blockDefinition;
-                                            this.chosenBlockIndex = index;
-                                        } 
-                                    }));
+                                    .setData('index', index)
+                                    .setData('can-be-picked-up', canBePlaced));
                 }
             }
         });
         this.blockImages.push(blockImages);
+    }
+
+    pickUpBlock(canBePlaced, blockImages, blockDefinition, index) {
+        if (canBePlaced) {
+            blockImages.forEach(img => {
+                img.setScale(this.tileScale);
+            });
+            this.chosenBlockImages = blockImages;
+            this.chosenBlockDefinition = blockDefinition;
+            this.chosenBlockIndex = index;
+        }
     }
 
     hasBlockAnyValidPlacement(blockDefinition) {
