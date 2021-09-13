@@ -1,4 +1,9 @@
-# Phaser 3 Webpack Project Template
+# Blockdoku
+
+Copy of the original blockdoku (mobile game, released on iOS and Android). [Play it here](https://nifty-morse-a80eb5.netlify.app/).
+
+![Screenshot1](https://user-images.githubusercontent.com/40124816/133094967-45f47a24-08df-4582-ae53-e5170ec08fb1.png)
+![Screenshot2](https://user-images.githubusercontent.com/40124816/133094892-5626a637-4eec-4256-ae9a-cc2bce535cdf.png)
 
 A Phaser 3 project template with ES6 support via [Babel 7](https://babeljs.io/) and [Webpack 4](https://webpack.js.org/) that includes hot-reloading for development and production-ready builds.
 
